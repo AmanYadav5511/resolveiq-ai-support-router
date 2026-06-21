@@ -1,0 +1,568 @@
+{
+  "name": "AI Support Ticket Router",
+  "nodes": [
+    {
+      "parameters": {
+        "operation": "getAll",
+        "limit": 1,
+        "filters": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        416,
+        16
+      ],
+      "id": "d31608b2-bf3e-472c-ba9e-9f506ca80094",
+      "name": "Get many messages",
+      "webhookId": "a7eb4c1a-b91e-4d26-8607-8d2adda62233",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "abv0HvnVmQGnLe5h",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 1
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        208,
+        16
+      ],
+      "id": "192bc6f2-bb85-4c7b-9c6b-cc4ce90adedb",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "responses": {
+          "values": [
+            {
+              "content": "=You are an expert customer support classifier.\nAnalyze this support email and extract structured information.\n\nFrom: {{$json[\"From\"]}}\nSubject: {{$json[\"Subject\"]}}\nMessage: {{$json[\"snippet\"]}}\n\nClassify and return ONLY this JSON, no extra text, no markdown:\n{\n  \"category\": \"one of: Billing, Technical, General\",\n  \"urgency\": 0,\n  \"urgency_reason\": \"specific reason based on THIS email\",\n  \"assigned_team\": \"one of: Billing Team, Tech Team, Support Team\",\n  \"summary\": \"1 sentence summary of THIS specific issue\",\n  \"customer_email\": \"sender email address\"\n}\n\nUrgency guide:\n- 9-10: Financial loss, data breach, system down, app crash\n- 7-8: Billing issues, account access problems\n- 5-6: Feature requests, general questions\n- 1-4: Low priority feedback\n\nIMPORTANT: Analyze THIS specific email. Do not use example values."
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2,
+      "position": [
+        848,
+        -176
+      ],
+      "id": "9a897f39-4003-4aa3-940f-b9738fe0c442",
+      "name": "Email Analyze",
+      "credentials": {
+        "openAiApi": {
+          "id": "odymodvgL5QOiNs9",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "responses": {
+          "values": [
+            {
+              "content": "=You are a professional customer support agent.\n\nWrite a warm, specific reply to this customer email.\n\nRules:\n- Address their SPECIFIC issue directly\n- Mention the exact problem they described\n- Never use \"[Customer's Name]\" — start with \"Hi there,\"\n- Keep it under 80 words\n- Sound human, not corporate\n- End with \"Best regards, Support Team\"\n\nCustomer Issue: {{$('Email Analyze').item.json.output[0].content[0].text}}\nOriginal Email: {{$('Get many messages').item.json.snippet}}\n\nReturn ONLY the email reply. Plain text only. No subject line."
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2,
+      "position": [
+        1184,
+        -176
+      ],
+      "id": "682bc0f5-c668-4620-8edb-ebe6c0367031",
+      "name": "Reply",
+      "credentials": {
+        "openAiApi": {
+          "id": "odymodvgL5QOiNs9",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const draftReply = $input.item.json.output[0].content[0].text.trim();\n\nconst classificationRaw = $('Email Analyze').item.json.output[0].content[0].text;\nconst cleaned = classificationRaw.replace(/```json|```/g, \"\").trim();\nconst classification = JSON.parse(cleaned);\n\nconst email = $('Get many messages').item.json;\n\nconst ticketId = 'TKT-' + Date.now();\n\nreturn {\n  json: {\n    ticketId,\n    customerEmail: email.From,\n    subject: email.subject || email.Subject || '',\n    message: email.snippet || email.body || email.text || '',\n    category: classification.category,\n    urgency: classification.urgency,\n    urgencyReason: classification.urgency_reason,\n    assignedTeam: classification.assigned_team,\n    draftReply,\n    status: 'New',\n    createdAt: new Date().toISOString()\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        880,
+        240
+      ],
+      "id": "25b1501c-4679-4cd9-b96b-1047734c2a2e",
+      "name": "Code 1"
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "appDMsLjPs7NQlXvL",
+          "mode": "list",
+          "cachedResultName": "AI Support Tickets",
+          "cachedResultUrl": "https://airtable.com/appDMsLjPs7NQlXvL"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbltDg0V0oYmmQkyR",
+          "mode": "list",
+          "cachedResultName": "Table 1",
+          "cachedResultUrl": "https://airtable.com/appDMsLjPs7NQlXvL/tbltDg0V0oYmmQkyR"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {
+            "urgency": "={{$json[\"urgency\"]}}",
+            "ticketId": "{{$json[\"ticketId\"]}}",
+            "customerEmail": "{{$json[\"customerEmail\"]}}",
+            "subject": "{{$json[\"subject\"]}}",
+            "message": "{{$json[\"message\"]}}",
+            "category": "BillingTechnical",
+            "urgencyReason": "{{$json[\"urgencyReason\"]}}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "ticketId",
+              "displayName": "ticketId",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "customerEmail",
+              "displayName": "customerEmail",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "subject",
+              "displayName": "subject",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "message",
+              "displayName": "message",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "category",
+              "displayName": "category",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "urgency",
+              "displayName": "urgency",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "urgencyReason",
+              "displayName": "urgencyReason",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "draftReply",
+              "displayName": "draftReply",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "assignedTeam",
+              "displayName": "assignedTeam",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "createdAt",
+              "displayName": "createdAt",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        1056,
+        240
+      ],
+      "id": "6e3445c0-95eb-454a-905e-f3237f8cef11",
+      "name": "Create a record",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "ZNvtE4NdeU0mnTQW",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0B12535DHR",
+          "mode": "list",
+          "cachedResultName": "all-n8n"
+        },
+        "text": "=🚨 *New Support Ticket*\n\n*Ticket ID:* {{$('Code 1').item.json[\"ticketId\"]}}\n*From:* {{$('Code 1').item.json[\"customerEmail\"]}}\n*Category:* {{$('Code 1').item.json[\"category\"]}}\n*Urgency:* {{$('Code 1').item.json[\"urgency\"]}}/10\n*Reason:* {{$('Code 1').item.json[\"urgencyReason\"]}}\n*Assigned To:* {{$('Code 1').item.json[\"assignedTeam\"]}}\n\n*Draft Reply Ready* ✅\nCheck Airtable for full details.",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.3,
+      "position": [
+        1232,
+        240
+      ],
+      "id": "90f21d10-b2b0-451e-9aa4-106f43e1af4f",
+      "name": "Send a message",
+      "webhookId": "f556f30e-a4a7-45d2-9694-e856ca1f8ff7",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "ZnHYGYFy3i6XAcGA",
+          "name": "Slack account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "1f573ac4-96c9-4d45-bc0d-c114955a5e7b",
+              "leftValue": "={{$json[\"snippet\"]}}",
+              "rightValue": "charged",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "ef90d06a-f999-438d-906a-281fa651bd3f",
+              "leftValue": "={{$json[\"snippet\"]}}",
+              "rightValue": "issue",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "799a1f4c-bf4e-4e23-806e-451d9425d5b6",
+              "leftValue": "={{$json[\"snippet\"]}}",
+              "rightValue": "problem",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "ad543d0f-380a-4c45-80d2-aa10e22043a7",
+              "leftValue": "={{$json[\"snippet\"]}}",
+              "rightValue": "help",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "ec2bd973-fbc2-479e-80be-b58650065b16",
+              "leftValue": "={{$json[\"snippet\"]}}",
+              "rightValue": "refund",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "fcfc3ea7-ec22-4353-baf2-620c7a493c3b",
+              "leftValue": "={{$json[\"snippet\"]}}",
+              "rightValue": "information",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "58514296-169f-4594-934c-0d8280145c44",
+              "leftValue": "={{$json[\"snippet\"]}}",
+              "rightValue": "crashing",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "eb6e0ea9-a09d-479f-9245-e8537e861532",
+              "leftValue": "={{$json[\"snippet\"]}}",
+              "rightValue": "process",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "c070840e-8b68-4384-a77c-a8805a4cd3aa",
+              "leftValue": "={{$json[\"snippet\"]}}",
+              "rightValue": "pricing",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "35044b30-5a23-4d04-9009-9a1f53e9aa81",
+              "leftValue": "={{$json[\"snippet\"]}}",
+              "rightValue": "crash",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        592,
+        16
+      ],
+      "id": "212df140-bd47-4a2d-8367-0a717b8cc37b",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "operation": "reply",
+        "messageId": "={{ $('Get many messages').item.json.id }}",
+        "emailType": "text",
+        "message": "={{ $('Reply').item.json.output[0].content[0].text }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1440,
+        240
+      ],
+      "id": "b354ea0a-a914-46e2-9f60-402aeda79754",
+      "name": "Reply to a message",
+      "webhookId": "5601a5ae-07cb-4aa6-acdb-9a5f187160bb",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "abv0HvnVmQGnLe5h",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get many messages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many messages": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email Analyze": {
+      "main": [
+        [
+          {
+            "node": "Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reply": {
+      "main": [
+        [
+          {
+            "node": "Code 1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code 1": {
+      "main": [
+        [
+          {
+            "node": "Create a record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a record": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Email Analyze",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message": {
+      "main": [
+        [
+          {
+            "node": "Reply to a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "98c22351-908a-4561-a545-d3898a5effe5",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "2c50727d82b1e42c25aeae51dc014293957ff978e2c77f4076d2db21e98c237f"
+  },
+  "id": "3ZxzaSNKljlocTuu",
+  "tags": []
+}
