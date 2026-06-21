@@ -40,28 +40,12 @@ ResolveIQ eliminates all of that. Every email is handled instantly, consistently
 
 ⚙️ How It Works
 
-Customer Email
-      ↓
-Gmail Trigger (Get many messages)
-      ↓
-Email Analyze (OpenAI) → Classifies category, urgency, team, summary
-      ↓
-IF Node → Filters unread/new emails only
-      ↓
-      ├──→ Code Node → Formats structured Slack ticket
-      │         ↓
-      │    Create Record (Airtable) → Logs ticket
-      │         ↓
-      │    Send Message (Slack) → Notifies assigned team
-      │
-      └──→ Reply Node (OpenAI) → Generates personalised customer reply
-                ↓
-          Reply to Message (Gmail) → Sends reply in same thread
+Customer Email------->Gmail Trigger (Get many messages)------>Email Analyze (OpenAI) → Classifies category, urgency, team, summary------->IF Node → Filters unread/new emails only------->Code Node → Formats structured Slack ticket------->Create Record (Airtable) → Logs ticket------->Send Message (Slack) → Notifies assigned team------->Reply Node (OpenAI) → Generates personalised customer reply------->Reply to Message (Gmail) → Sends reply in same thread
 
 
 🛠️ Tech Stack
 
-ToolPurposen8nWorkflow automation engineOpenAI (GPT-4o)Email classification + reply generationGmailEmail trigger + sending repliesSlackTeam notifications and routingAirtableTicket logging and trackingLovableNo-code frontend dashboard
+Tool Purpose n8n Workflow automation engineOpenAI (GPT-4o)Email classification + reply generationGmailEmail trigger + sending repliesSlackTeam notifications and routing Airtable Ticket logging and tracking Lovable No-code frontend dashboard
 
 
 📋 AI Classification Output
@@ -139,7 +123,8 @@ Send a test support email and watch it run end-to-end
 
 📸 Screenshots
 
-<img width="1466" height="678" alt="Screenshot 2026-06-21 at 5 48 00 AM" src="https://github.com/user-attachments/assets/7bd6d462-2a4a-4d02-8e2e-d7c8c8a708e9" />
+<img width="1361" height="732" alt="Screenshot 2026-06-20 at 10 42 58 AM" src="https://github.com/user-attachments/assets/68e7bc6b-2878-425b-9479-42c53e501d81" />
+
 <img width="1466" height="678" alt="Screenshot 2026-06-21 at 5 48 00 AM" src="https://github.com/user-attachments/assets/e7072c9d-565e-46f6-afec-2423f70631f4" />
 
 
@@ -153,12 +138,12 @@ https://www.linkedin.com/posts/aman5511_n8n-workflowautomation-automation-ugcPos
 
 📁 Files in This Repo
 
-resolveiq-ai-support-router/
-├── resolveiq-workflow.json     # n8n workflow export
-├── screenshots/
-│   ├── workflow-canvas.png
-│   └── lovable-frontend.png
-└── README.md
+~resolveiq-ai-support-router
+~resolveiq-workflow.json     # n8n workflow export
+~screenshots
+~workflow-canvas.png
+~lovable-frontend.png
+~README.md
 
 
 👨‍💻 Author
