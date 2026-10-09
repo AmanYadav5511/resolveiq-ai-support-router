@@ -1,14 +1,14 @@
-ResolveIQ — AI Support Ticket Router 🎫🤖
+ResolveIQ — AI Support Ticket Router 
 
 
 Automatically classify, route, log, and reply to customer support emails in under 10 seconds — no human triage needed.
 
 
 
-⭐ If this project helped you or gave you ideas, consider starring the repo!
+If this project helped you or gave you ideas, consider starring the repo!
 
 
-🚀 What It Does
+ What It Does
 
 ResolveIQ is an end-to-end AI automation workflow that takes a raw customer support email and:
 
@@ -24,7 +24,7 @@ Displays everything on a clean no-code frontend built with Lovable
 All of this happens automatically, in under 10 seconds, the moment an email arrives.
 
 
-❌ Problem It Solves
+ Problem It Solves
 
 Small support teams waste hours every day:
 
@@ -38,17 +38,17 @@ Dropping tickets because nothing was logged or tracked
 ResolveIQ eliminates all of that. Every email is handled instantly, consistently, and correctly — without a human touching it.
 
 
-⚙️ How It Works
+How It Works
 
 Customer Email------->Gmail Trigger (Get many messages)------>Email Analyze (OpenAI) → Classifies category, urgency, team, summary------->IF Node → Filters unread/new emails only------->Code Node → Formats structured Slack ticket------->Create Record (Airtable) → Logs ticket------->Send Message (Slack) → Notifies assigned team------->Reply Node (OpenAI) → Generates personalised customer reply------->Reply to Message (Gmail) → Sends reply in same thread
 
 
-🛠️ Tech Stack
+Tech Stack
 
 Tool Purpose n8n Workflow automation engineOpenAI (GPT-4o)Email classification + reply generationGmailEmail trigger + sending repliesSlackTeam notifications and routing Airtable Ticket logging and tracking Lovable No-code frontend dashboard
 
 
-📋 AI Classification Output
+AI Classification Output
 
 The Email Analyze node returns structured JSON for every ticket:
 
@@ -62,7 +62,7 @@ json{
 }
 
 
-🖥️ Setup Instructions
+Setup Instructions
 
 Prerequisites
 
@@ -102,7 +102,7 @@ Airtable API key → connect your account
 
 
 
-⚠️ Credentials are never included in the export for security reasons, so you'll need to add your own.
+Credentials are never included in the export for security reasons, so you'll need to add your own.
 
 
 
@@ -121,7 +121,7 @@ Toggle the workflow from Inactive → Active
 Send a test support email and watch it run end-to-end
 
 
-📸 Screenshots
+Screenshots
 
 <img width="1361" height="732" alt="Screenshot 2026-06-20 at 10 42 58 AM" src="https://github.com/user-attachments/assets/68e7bc6b-2878-425b-9479-42c53e501d81" />
 
@@ -129,14 +129,14 @@ Send a test support email and watch it run end-to-end
 
 
 
-🎥 Demo
+Demo
 
 
 https://www.linkedin.com/posts/aman5511_n8n-workflowautomation-automation-ugcPost-7474253392043851776-ZOC7/?utm_source=social_share_send&utm_medium=member_desktop_web&rcm=ACoAAE0bGwUBjYN0-BX6B7Sahd4h-Mr2JKyeDoc
 
 
 
-📁 Files in This Repo
+Files in This Repo
 
 ~resolveiq-ai-support-router
 ~resolveiq-workflow.json     # n8n workflow export
@@ -146,7 +146,7 @@ https://www.linkedin.com/posts/aman5511_n8n-workflowautomation-automation-ugcPos
 ~README.md
 
 
-👨‍💻 Author
+Author
 
 Aman Yadav
 BCA Graduate | AI Automation Developer
@@ -154,7 +154,7 @@ Building real-world LLM-powered systems with n8n, OpenAI & Anthropic
 
 
 
-📄 License
+License
 
 MIT License — free to use, modify, and build on top of.
 
